@@ -1,15 +1,15 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "openwiki-openhands-prototype",
-  "description": "Prototype OpenHands plugin marketplace for agent-maintained repo documentation",
+  "name": "openhands-autodocs",
+  "description": "OpenHands plugin marketplace for durable agent-maintained repository documentation",
   "owner": {
     "name": "Rajiv Shah"
   },
   "plugins": [
     {
-      "name": "openwiki-docs",
-      "source": "./plugins/openwiki-docs",
-      "description": "Generate and maintain OpenWiki-style repository documentation with OpenHands",
+      "name": "autodocs",
+      "source": "./plugins/autodocs",
+      "description": "Generate and maintain durable repository documentation with OpenHands, with optional GitNexus enrichment",
       "version": "0.1.0",
       "author": {
         "name": "Rajiv Shah"
@@ -20,7 +20,8 @@
         "repo",
         "wiki",
         "automation",
-        "openhands"
+        "openhands",
+        "gitnexus"
       ]
     }
   ]

@@ -1,91 +1,152 @@
-# OpenHands OpenWiki
+# OpenHands Autodocs
 
-OpenHands OpenWiki is a lightweight OpenHands skill and automation recipe for creating durable repository documentation in `openwiki/`.
+OpenHands Autodocs is an OpenHands plugin and skill workflow for creating and maintaining durable repository documentation.
 
-It is inspired by [LangChain's OpenWiki](https://github.com/langchain-ai/openwiki): give humans and future coding agents a reliable place to start, then keep that documentation fresh as the repo changes. OpenHands is a perfect complement, because OpenHands can handle repo access, LLM profile configuration, tool runtime, scheduling, and GitHub integration. All we need is to use skills with the OpenHands conversation and automation surfaces.
+It is inspired by [LangChain's OpenWiki](https://github.com/langchain-ai/openwiki): give humans and future coding agents a reliable place to start, then keep that documentation fresh as the repo changes. Autodocs keeps that default OpenWiki-style output, but is designed to be flexible enough to use other documentation formats and structured context sources, including GitNexus.
+
+OpenHands is a natural runtime for this workflow because it already handles repository access, LLM profile configuration, tool runtime, scheduling, GitHub integration, and PR creation.
 
 ## What It Does
 
-OpenWiki runs inside an OpenHands conversation or automation and:
+Autodocs runs inside an OpenHands conversation or automation and:
 
-1. Reads repository structure, existing docs, tests, config, and selected git history.
-2. Creates or updates `openwiki/quickstart.md` plus a small set of supporting pages.
-3. Adds a top-level `AGENTS.md` or `CLAUDE.md` reference to the OpenWiki quickstart.
+1. Reads repository structure, existing docs, tests, config, selected git history, and current diffs.
+2. Creates or updates default OpenWiki-style docs under `openwiki/`, starting at `openwiki/quickstart.md`.
+3. Adds or refreshes a top-level `AGENTS.md` or `CLAUDE.md` reference to the generated docs.
 4. Tracks successful updates in `openwiki/.last-update.json`.
 5. Keeps diffs scoped to documentation and agent guidance files.
+6. Optionally uses GitNexus graph context when the repository has a GitNexus index.
 
-The output is meant to help a new engineer or future agent answer:
+The output is meant to help a new engineer or future coding agent answer:
 
 - What does this project do?
 - Where are the important workflows?
 - How do I verify common changes?
 - What should I read before editing?
+- Which areas are structurally risky to change?
+
+## Modes
+
+Autodocs supports three practical modes:
+
+- **Standard Autodocs**: OpenHands inspects source files, existing docs, tests, config, scripts, and git history.
+- **GitNexus-enriched Autodocs**: If GitNexus is available and the repository is indexed, OpenHands can use graph-backed module maps, symbol context, impact analysis, traces, and change detection as additional evidence.
+- **Planning mode**: OpenHands inspects the repo and returns a proposed documentation plan without writing docs.
+
+GitNexus is optional. Autodocs should still produce useful documentation when GitNexus is not installed or the target repository has not been indexed.
 
 ## Repository Layout
 
 ```text
-benchmarks/                     # Recorded a sample run to show you what it does
-demo-target/                    # Tiny local smoke-test repository
-plugins/openwiki-docs/          # The OpenHands plugin and skill
+benchmarks/                 # Recorded sample run and quality notes
+demo-target/                # Tiny local smoke-test repository
+plugins/autodocs/           # The OpenHands plugin, commands, and skill
 ```
 
 ## Run It With OpenHands
 
-OpenWiki can run from [Agent Canvas](https://github.com/OpenHands/agent-canvas), remote Agent Canvas, OpenHands Cloud, and OpenHands Enterprise. The loop is the same:
+Autodocs can run from [Agent Canvas](https://github.com/OpenHands/agent-canvas), remote Agent Canvas, OpenHands Cloud, and OpenHands Enterprise. The loop is the same:
 
-1. Load the `openwiki-docs` plugin.
+1. Load the `autodocs` plugin.
 2. Point OpenHands at a target repository.
-3. Ask OpenHands to initialize or update the OpenWiki docs.
-4. Keep the diff scoped to `openwiki/**`, `AGENTS.md`, and `CLAUDE.md`.
+3. Ask OpenHands to plan, initialize, or update docs.
+4. Keep the diff scoped to `openwiki/**`, top-level `AGENTS.md`, and top-level `CLAUDE.md`.
 
-Use these plugin settings when creating an OpenWiki plugin automation in any OpenHands surface:
+Use these plugin settings when creating an Autodocs plugin automation in any OpenHands surface:
 
 ```text
-source: github:rajshah4/openhands-openwiki
-repo_path: plugins/openwiki-docs
+source: github:rajshah4/openhands-autodocs
+repo_path: plugins/autodocs
 ref: main
 ```
 
 ## Setup
 
-Let's start with Agent Canvas doing this as a dry run.
+Start with Agent Canvas doing this as a dry run.
 
 1. Open Agent Canvas, for example locally at `http://127.0.0.1:8000`.
-2. Select an LLM profile. OpenWiki does not require a specific profile; choose based on your quality, latency, and cost goals. In my quick testing, a lighter profile was enough to write useful repo docs.
-3. Make the target repository available to the local runtime.
-4. Load this repo's `openwiki-docs` plugin from `plugins/openwiki-docs`.
-5. Start a conversation with a prompt like:
+2. Select an LLM profile. Autodocs does not require a specific profile; choose based on your quality, latency, and cost goals.
+3. Make the target repository available to the OpenHands runtime.
+4. Load this repo's `autodocs` plugin from `plugins/autodocs`.
+5. Start with a planning prompt:
 
 ```text
-Use the openwiki-docs plugin in this repository and initialize OpenWiki docs.
+Use the autodocs plugin in this repository and plan durable repository docs.
 Focus on architecture, setup, tests, and release process.
 
 Constraints:
-- Write documentation under openwiki/.
+- Do not edit files yet.
+- Identify the smallest useful documentation set.
+- Note whether GitNexus appears available and useful.
+- Return the evidence you would inspect before writing docs.
+```
+
+Then initialize docs:
+
+```text
+Use the autodocs plugin in this repository and initialize docs.
+Focus on architecture, setup, tests, and release process.
+
+Constraints:
+- Write default OpenWiki-style documentation under openwiki/.
 - Update only top-level AGENTS.md or CLAUDE.md outside openwiki/ if needed.
 - Do not edit application source files.
+- If GitNexus is available and indexed for this repo, use it as optional evidence.
 - Verify generated file listing, relative links, and git status before finishing.
 ```
 
-Once this works, use the automation server in Agent Canvas, remote Agent Canvas, OpenHands Cloud, or OpenHands Enterprise. Cron automations are the simplest first step because they can be manually dispatched and work well for local validation. See the [automation docs for more details](https://docs.openhands.dev/openhands/usage/agent-canvas/prebuilt-automations).
+## Optional GitNexus Enrichment
+
+Autodocs can work without GitNexus. When GitNexus is installed and the repository has been indexed, it can improve the documentation workflow by giving OpenHands structured context:
+
+- `query` to find the best starting points for a concept or workflow.
+- `context` to explain a symbol's callers, callees, interface relationships, and process membership.
+- `impact` to identify risky symbols and blast radius before documenting or changing a workflow.
+- `trace` to explain execution paths between important symbols.
+- `detect-changes` to map current diffs to indexed symbols and affected flows during update mode.
+
+A typical setup is:
+
+```bash
+npx -y gitnexus@latest analyze /path/to/repo --name my-repo
+```
+
+Then connect GitNexus as an MCP server in OpenHands:
 
 ```text
-Create an OpenHands automation for OpenWiki docs maintenance.
-Use the plugin preset with source github:rajshah4/openhands-openwiki,
-repo_path plugins/openwiki-docs, and ref main.
+Name: gitnexus
+Type: stdio
+Command: npx
+Arguments:
+-y
+gitnexus@latest
+mcp
+```
+
+Autodocs should treat GitNexus output as evidence, not as the only source of truth. Source files, existing docs, tests, config, and git history still matter.
+
+## Automation
+
+Once the manual flow works, use the automation server in Agent Canvas, remote Agent Canvas, OpenHands Cloud, or OpenHands Enterprise. Cron automations are the simplest first step because they can be manually dispatched and work well for validation. See the [automation docs](https://docs.openhands.dev/openhands/usage/agent-canvas/prebuilt-automations) for more details.
+
+```text
+Create an OpenHands automation for Autodocs maintenance.
+Use the plugin preset with source github:rajshah4/openhands-autodocs,
+repo_path plugins/autodocs, and ref main.
 Run against https://github.com/OWNER/REPO every weekday at 8 AM.
-Initialize OpenWiki docs if openwiki/quickstart.md is missing;
-otherwise update the existing OpenWiki docs.
+Initialize docs if openwiki/quickstart.md is missing;
+otherwise update the existing docs.
+If GitNexus is available and indexed, use it for module, symbol, impact, and change context.
 Commit only openwiki/** plus top-level AGENTS.md or CLAUDE.md changes,
 and open a PR only when docs changed.
 ```
 
 The automation server also supports events. For example, when your OpenHands surface can receive GitHub events, use the automation server to trigger on a new PR or a labeled PR.
 
-The durable behavior lives in [`plugins/openwiki-docs/skills/openwiki-docs/SKILL.md`](plugins/openwiki-docs/skills/openwiki-docs/SKILL.md). The plugin also includes thin command wrappers for OpenHands surfaces that expose plugin commands, but you can use plain language prompts like the examples above.
+The durable behavior lives in [`plugins/autodocs/skills/autodocs/SKILL.md`](plugins/autodocs/skills/autodocs/SKILL.md). The plugin also includes thin command wrappers for OpenHands surfaces that expose plugin commands, but plain language prompts work too.
 
 ## Benchmark
 
-To give you a sense of how this works, I ran a quick benchmark against `OpenHands/OpenHands-CLI`, which generated six documentation pages plus metadata in 203 seconds. That run used my local `Minimax` LLM profile (`openhands/minimax-m2.7`), but OpenWiki itself is not tied to that profile.
+To give you a sense of the baseline workflow, I ran a quick benchmark against `OpenHands/OpenHands-CLI`, which generated six OpenWiki-style documentation pages plus metadata in 203 seconds. That run used my local `Minimax` LLM profile (`openhands/minimax-m2.7`), but Autodocs itself is not tied to that profile.
 
 See [the benchmark report](benchmarks/openhands-cli-local-minimax/README.md) for generated docs, resource usage, and quality notes.

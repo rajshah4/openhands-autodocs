@@ -1,19 +1,20 @@
 {
-  "name": "openwiki-docs",
+  "name": "autodocs",
   "version": "0.1.0",
-  "description": "Generate and maintain OpenWiki-style repository documentation with OpenHands",
+  "description": "Generate and maintain durable repository documentation with OpenHands, with optional GitNexus enrichment",
   "author": {
     "name": "Rajiv Shah"
   },
-  "homepage": "https://github.com/rajshah4/openwiki-openhands-prototype",
-  "repository": "https://github.com/rajshah4/openwiki-openhands-prototype",
+  "homepage": "https://github.com/rajshah4/openhands-autodocs",
+  "repository": "https://github.com/rajshah4/openhands-autodocs",
   "license": "MIT",
   "keywords": [
     "documentation",
     "repo",
     "wiki",
     "automation",
-    "openhands"
+    "openhands",
+    "gitnexus"
   ],
   "parameters": {
     "focus": {
@@ -23,18 +24,25 @@
       "default": "repository architecture, workflows, and future agent guidance"
     }
   },
-  "entry_command": "update",
+  "entry_command": "plan",
   "examples": [
     {
+      "title": "Plan documentation",
+      "prompt": "/autodocs:plan",
+      "parameters": {
+        "focus": "architecture and workflows"
+      }
+    },
+    {
       "title": "Initialize documentation",
-      "prompt": "/openwiki-docs:init",
+      "prompt": "/autodocs:init",
       "parameters": {
         "focus": "architecture and workflows"
       }
     },
     {
       "title": "Update existing documentation",
-      "prompt": "/openwiki-docs:update API and routing changes",
+      "prompt": "/autodocs:update API and routing changes",
       "parameters": {
         "focus": "API and routing changes"
       }

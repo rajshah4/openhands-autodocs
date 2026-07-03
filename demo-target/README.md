@@ -1,6 +1,6 @@
 # Demo Target Service
 
-This tiny service exists so the OpenWiki Docs plugin can be tested against a real repository shape.
+This tiny service exists so the Autodocs plugin can be tested against a real repository shape.
 
 ## What It Does
 
@@ -27,7 +27,7 @@ curl http://localhost:3000/healthz
 curl http://localhost:3000/notes
 curl -X POST http://localhost:3000/notes \
   -H "Content-Type: application/json" \
-  -d '{"title":"Test","body":"Hello from OpenWiki"}'
+  -d '{"title":"Test","body":"Hello from Autodocs"}'
 ```
 
 ## Change Surfaces

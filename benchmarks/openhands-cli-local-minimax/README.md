@@ -1,10 +1,10 @@
 # Benchmark: OpenHands CLI on Local Agent Canvas + Minimax
 
-This benchmark initializes OpenWiki documentation for the public
+This benchmark initializes Autodocs' default OpenWiki-style documentation for the public
 [`OpenHands/OpenHands-CLI`](https://github.com/OpenHands/OpenHands-CLI) repository using the local
 Agent Canvas API and the `Minimax` profile.
 
-This is one recorded profile/model pairing, not a requirement for OpenWiki. Use the profile that fits the target repo and your quality, latency, and cost goals.
+This is one recorded profile/model pairing, not a requirement for Autodocs. Use the profile that fits the target repo and your quality, latency, and cost goals.
 
 ## Target
 
@@ -48,7 +48,7 @@ Generated docs:
 - `openwiki/testing.md`
 - `openwiki/build-release.md`
 - `openwiki/.last-update.json`
-- top-level `AGENTS.md` OpenWiki reference section
+- top-level `AGENTS.md` docs reference section
 
 Saved artifacts:
 
@@ -70,7 +70,7 @@ Passed:
 
 Not run:
 
-- The target repository's unit test suite was not run. This benchmark validates OpenWiki documentation generation, link integrity, metadata, and edit scope rather than application behavior.
+- The target repository's unit test suite was not run. This benchmark validates Autodocs documentation generation, link integrity, metadata, and edit scope rather than application behavior.
 
 ## Quality Notes
 

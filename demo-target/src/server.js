@@ -4,7 +4,7 @@ const notes = [
   {
     id: "note-1",
     title: "Welcome",
-    body: "This in-memory note helps OpenWiki discover the domain model.",
+    body: "This in-memory note helps Autodocs discover the domain model.",
     createdAt: new Date("2026-07-02T00:00:00.000Z").toISOString(),
   },
 ];
