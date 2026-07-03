@@ -20,7 +20,7 @@ sdk_version: 1.29.3
 
 Use `127.0.0.1` for local checks. On this machine, `localhost` may resolve through an interface that does not answer even when the service is listening.
 
-The local `Minimax` profile maps to:
+The recorded local baseline used an LLM profile named `Minimax`, which mapped to:
 
 ```text
 openhands/minimax-m2.7
@@ -113,7 +113,7 @@ Confirm Agent Canvas is reachable at `http://127.0.0.1:8000`, then install or lo
 plugins/openwiki-docs
 ```
 
-Use the local `Minimax` profile for comparable test runs.
+Use the same LLM profile only when you want apples-to-apples comparisons with the recorded benchmark. Otherwise, pick the profile you want to evaluate for quality, latency, and cost.
 
 ### LC-1: Demo Init
 

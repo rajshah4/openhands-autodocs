@@ -4,6 +4,8 @@ This benchmark initializes OpenWiki documentation for the public
 [`OpenHands/OpenHands-CLI`](https://github.com/OpenHands/OpenHands-CLI) repository using the local
 Agent Canvas API and the `Minimax` profile.
 
+This is one recorded profile/model pairing, not a requirement for OpenWiki. Use the profile that fits the target repo and your quality, latency, and cost goals.
+
 ## Target
 
 | Field | Value |

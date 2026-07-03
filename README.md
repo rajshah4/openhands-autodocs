@@ -2,7 +2,7 @@
 
 OpenHands OpenWiki is a lightweight OpenHands skill and automation recipe for creating durable repository documentation in `openwiki/`.
 
-It is inspired by the OpenWiki idea: give humans and future coding agents a reliable place to start, then keep that documentation fresh as the repo changes. In OpenHands, the scheduling, repo cloning, model configuration, tool runtime, and GitHub integration already exist, so this repo focuses on the portable docs contract and the prompts that make it useful.
+It is inspired by the OpenWiki idea: give humans and future coding agents a reliable place to start, then keep that documentation fresh as the repo changes. OpenHands is a perfect complement, because OpenHands can handle the scheduling, repo cloning, LLM profile configuration, tool runtime, and GitHub integration. All we need is to use skills with the automation server.
 
 ## What It Does
 
@@ -24,7 +24,7 @@ The output is meant to help a new engineer or future agent answer:
 ## Repository Layout
 
 ```text
-benchmarks/                     # Recorded benchmark runs and generated docs
+benchmarks/                     # Recorded a sample run to show you what it does
 demo-target/                    # Tiny local smoke-test repository
 plugins/openwiki-docs/          # The OpenHands plugin and skill
 TESTING_PLAN.md                 # Cross-backend test plan
@@ -39,7 +39,7 @@ The local Agent Canvas and Enterprise automation paths use the same OpenWiki loo
 3. Run `/openwiki-docs:init` or `/openwiki-docs:update`.
 4. Keep the diff scoped to `openwiki/**`, `AGENTS.md`, and `CLAUDE.md`.
 
-Enterprise has the advantage when you want durable scheduling, GitHub events, repo cloning, JSON event payloads, and PR/comment integrations. Local Agent Canvas is useful for fast dry runs and benchmarking before you schedule the workflow.
+Local Agent Canvas works great for this. It also works with the Enterprise version of OpenHands, which gives you easier integrations.
 
 Use these plugin settings in Enterprise automations:
 
@@ -49,13 +49,13 @@ repo_path: plugins/openwiki-docs
 ref: main
 ```
 
-## Local Agent Canvas Dry Run
+## Setup
 
-Use local Agent Canvas when you want a quick interactive dry run before scheduling anything.
+Let's start with Agent Canvas doing this as a dry run.
 
 1. Open Agent Canvas at `http://127.0.0.1:8000`.
-2. Select the `Minimax` profile, which maps to `openhands/minimax-m2.7` in the verified test environment.
-3. Make the target repository available to the local runtime. On macOS, `/private/tmp/my-target-repo` is usually easier than a repo under `~/Documents`.
+2. Select an LLM profile. OpenWiki does not require a specific profile; choose based on your quality, latency, and cost goals. In my quick testing, a lighter profile was enough to write useful repo docs.
+3. Make the target repository available to the local runtime.
 4. Load this repo's `openwiki-docs` plugin from `plugins/openwiki-docs`.
 5. Start a conversation with a prompt like:
 
@@ -70,12 +70,10 @@ Constraints:
 - Verify generated file listing, relative links, and git status before finishing.
 ```
 
-## Enterprise Automation
-
-Ask the OpenHands automation skill to create the automation. Start with cron for the first production path because it works well for manual dispatch, private deployments, and one-or-many repo maintenance:
+Once this works, go ahead and use the cron or event-based automation path, for example to run after a PR. See the [automation docs for more details](https://docs.openhands.dev/openhands/usage/agent-canvas/prebuilt-automations).
 
 ```text
-Create an OpenHands Enterprise automation for OpenWiki docs maintenance.
+Create an OpenHands automation for OpenWiki docs maintenance.
 Use the plugin preset with source github:rajshah4/openhands-openwiki,
 repo_path plugins/openwiki-docs, and ref main.
 Run against https://github.com/OWNER/REPO every weekday at 8 AM.
@@ -85,19 +83,11 @@ Commit only openwiki/** plus top-level AGENTS.md or CLAUDE.md changes,
 and open a PR only when docs changed.
 ```
 
-The automation server also supports events. For a PR label trigger, ask for a GitHub `pull_request.labeled` event with this filter:
+The automation server also supports events. Simply ask it to generate an automation for a new PR or a labeled PR. For a PR label trigger, ask for a GitHub `pull_request.labeled` event with this filter.
 
 ```text
 contains(pull_request.labels[].name, 'openwiki-update')
 ```
-
-For a comment trigger, ask for a GitHub `issue_comment.created` event with this filter:
-
-```text
-icontains(comment.body, '@openhands openwiki') || icontains(comment.body, '/openwiki')
-```
-
-Event automations should read the GitHub event payload, inspect the repo or PR branch from that payload, run the OpenWiki command, and comment with the result. If the Enterprise instance cannot receive GitHub events, use cron plus manual dispatch or polling.
 
 ## Plugin Commands
 
@@ -111,30 +101,8 @@ Use these inside an OpenHands conversation with the plugin loaded:
 
 The command files are intentionally thin. The durable behavior lives in [`plugins/openwiki-docs/skills/openwiki-docs/SKILL.md`](plugins/openwiki-docs/skills/openwiki-docs/SKILL.md).
 
-## Safety Contract
-
-OpenWiki runs should edit only:
-
-```text
-openwiki/**
-AGENTS.md
-CLAUDE.md
-```
-
-They should not read `.env`, private keys, tokens, or other secret-bearing files. They should not edit application source. If docs are current, update mode should leave the worktree clean.
-
 ## Benchmark
 
-A local Agent Canvas benchmark against `OpenHands/OpenHands-CLI` generated six documentation pages plus metadata in 203 seconds using the `Minimax` profile.
+To give you a sense of how this works, I ran a quick benchmark against `OpenHands/OpenHands-CLI`, which generated six documentation pages plus metadata in 203 seconds. That run used my local `Minimax` LLM profile (`openhands/minimax-m2.7`), but OpenWiki itself is not tied to that profile.
 
 See [the benchmark report](benchmarks/openhands-cli-local-minimax/README.md) for generated docs, resource usage, and quality notes.
-
-The headline finding: the docs were useful and scoped correctly, but init mode used 1.54M prompt tokens on a 388-file repository. That is the next optimization target before broad customer rollout.
-
-## Status
-
-This repo is ready for customer-facing experiments on forks and low-risk repositories. The recommended next trials are:
-
-- one local no-op update benchmark
-- one OpenHands Enterprise cron automation on a fork
-- one GitHub label-triggered update on a fork PR
