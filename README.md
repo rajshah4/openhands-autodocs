@@ -24,16 +24,33 @@ The output is meant to help a new engineer or future agent answer:
 ## Repository Layout
 
 ```text
-automations/                    # OpenHands Enterprise plugin-preset payloads
 benchmarks/                     # Recorded benchmark runs and generated docs
 demo-target/                    # Tiny local smoke-test repository
-docs/                           # Local and Enterprise usage guides
 plugins/openwiki-docs/          # The OpenHands plugin and skill
 scripts/                        # Preflight, local launcher, and validation helpers
 TESTING_PLAN.md                 # Cross-backend test plan
 ```
 
-## Quick Start: Local Agent Canvas
+## Run It With OpenHands
+
+The local Agent Canvas and Enterprise automation paths use the same OpenWiki loop:
+
+1. Load the `openwiki-docs` plugin.
+2. Point OpenHands at a target repository.
+3. Run `/openwiki-docs:init` or `/openwiki-docs:update`.
+4. Keep the diff scoped to `openwiki/**`, `AGENTS.md`, and `CLAUDE.md`.
+
+Enterprise has the advantage when you want durable scheduling, GitHub events, repo cloning, JSON event payloads, and PR/comment integrations. Local Agent Canvas is useful for fast dry runs and benchmarking before you schedule the workflow.
+
+Use these plugin settings in Enterprise automations:
+
+```text
+source: github:rajshah4/openhands-openwiki
+repo_path: plugins/openwiki-docs
+ref: main
+```
+
+## Local Agent Canvas Dry Run
 
 Verify local Agent Canvas:
 
@@ -52,9 +69,9 @@ OPENWIKI_MAX_ITERATIONS=140 \
 node scripts/run-agent-canvas-openwiki.mjs
 ```
 
-See [Local Agent Canvas Usage](docs/local-agent-canvas.md) for the full workflow and sample prompts.
+The verified local profile maps to `openhands/minimax-m2.7`. If the local server cannot read a repo under `~/Documents` on macOS, clone or copy the target repo under `/private/tmp`.
 
-## Quick Start: OpenHands Enterprise Automations
+## Enterprise Automation
 
 Verify the automation API:
 
@@ -64,16 +81,32 @@ DOTENV_FILE="/path/to/.env" \
 ./scripts/check-replicated-automation-api.sh
 ```
 
-Create a plugin-preset automation:
+Then ask the OpenHands automation skill to create the automation. Start with cron for the first production path because it works well for manual dispatch, private deployments, and one-or-many repo maintenance:
 
-```bash
-curl -X POST "${OPENHANDS_HOST}/api/automation/v1/preset/plugin" \
-  -H "Authorization: Bearer ${OPENHANDS_API_KEY}" \
-  -H "Content-Type: application/json" \
-  -d @automations/cron-update.json
+```text
+Create an OpenHands Enterprise automation for OpenWiki docs maintenance.
+Use the plugin preset with source github:rajshah4/openhands-openwiki,
+repo_path plugins/openwiki-docs, and ref main.
+Run against https://github.com/OWNER/REPO every weekday at 8 AM.
+Run /openwiki-docs:init if openwiki/quickstart.md is missing;
+otherwise run /openwiki-docs:update.
+Commit only openwiki/** plus top-level AGENTS.md or CLAUDE.md changes,
+and open a PR only when docs changed.
 ```
 
-See [OpenHands Enterprise Automations](docs/openhands-enterprise-automations.md) for cron, manual dispatch, GitHub label, and GitHub comment examples.
+The automation server also supports events. For a PR label trigger, ask for a GitHub `pull_request.labeled` event with this filter:
+
+```text
+contains(pull_request.labels[].name, 'openwiki-update')
+```
+
+For a comment trigger, ask for a GitHub `issue_comment.created` event with this filter:
+
+```text
+icontains(comment.body, '@openhands openwiki') || icontains(comment.body, '/openwiki')
+```
+
+Event automations should read the GitHub event payload, inspect the repo or PR branch from that payload, run the OpenWiki command, and comment with the result. If the Enterprise instance cannot receive GitHub events, use cron plus manual dispatch or polling.
 
 ## Plugin Commands
 
@@ -86,17 +119,6 @@ Use these inside an OpenHands conversation with the plugin loaded:
 ```
 
 The command files are intentionally thin. The durable behavior lives in [`plugins/openwiki-docs/skills/openwiki-docs/SKILL.md`](plugins/openwiki-docs/skills/openwiki-docs/SKILL.md).
-
-## Automation Payloads
-
-- [`automations/cron-update.json`](automations/cron-update.json): daily documentation maintenance.
-- [`automations/fork-smoke-template.json`](automations/fork-smoke-template.json): first manual smoke against a fork.
-- [`automations/github-label-update.json`](automations/github-label-update.json): run when a PR gets the `openwiki-update` label.
-- [`automations/github-comment.json`](automations/github-comment.json): run when someone comments with `@openhands openwiki`.
-- [`automations/rajistics-demo-target-smoke.json`](automations/rajistics-demo-target-smoke.json): recorded smoke automation for `rajshah4/openwiki-demo-target`.
-- [`automations/rajistics-postrename-smoke.json`](automations/rajistics-postrename-smoke.json): recorded post-rename smoke using `github:rajshah4/openhands-openwiki`.
-
-Before deploying, replace placeholder repos and review the plugin source/ref.
 
 ## Safety Contract
 

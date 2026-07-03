@@ -220,19 +220,20 @@ Do not `source` the Rajistics `.env` directly. The helper parses assignment line
 
 ### RA-1: Manual Cron Smoke On A Fork
 
-Use `automations/cron-update.json` with:
+Use the OpenHands automation skill with the cron instructions in `README.md`.
 
-- plugin source set to the pushed `openhands-openwiki` repo or marketplace repo
-- repo set to a fork, not upstream
-- schedule set to daily
+Ask for:
 
-Create the automation through:
-
-```bash
-curl -X POST "${OPENHANDS_HOST}/api/automation/v1/preset/plugin" \
-  -H "Authorization: Bearer ${OPENHANDS_API_KEY}" \
-  -H "Content-Type: application/json" \
-  -d @automations/cron-update.json
+```text
+Create an OpenHands Enterprise automation for OpenWiki docs maintenance.
+Use the plugin preset with source github:rajshah4/openhands-openwiki,
+repo_path plugins/openwiki-docs, and ref main.
+Run against a fork, not an upstream repo.
+Use a daily cron trigger.
+Run /openwiki-docs:init if openwiki/quickstart.md is missing;
+otherwise run /openwiki-docs:update.
+Commit only openwiki/** plus top-level AGENTS.md or CLAUDE.md changes,
+and open a PR only when docs changed.
 ```
 
 Then manually dispatch it from the automation API or UI.
@@ -266,7 +267,7 @@ Expected:
 
 ### RA-3: Event Label Trigger
 
-Use `automations/github-label-update.json`.
+Use the OpenHands automation skill with the PR label event instructions in `README.md`.
 
 On a fork PR, apply:
 
@@ -282,7 +283,7 @@ Expected:
 
 ### RA-4: Mention Trigger
 
-Use `automations/github-comment.json`.
+Use the OpenHands automation skill with the comment event instructions in `README.md`.
 
 On a fork issue or PR, comment:
 
