@@ -124,6 +124,8 @@ mcp
 
 Autodocs should treat GitNexus output as evidence, not as the only source of truth. Source files, existing docs, tests, config, and git history still matter.
 
+If enabling a GitNexus MCP server makes a conversation fail before the prompt runs, treat that as an OpenHands/MCP environment compatibility issue, not an Autodocs requirement. Disable the MCP server or update OpenHands/Agent Server, then run Autodocs normally. Autodocs can still work from standard repository inspection, and GitNexus CLI output can be used as optional evidence when available.
+
 ## Extend With More Context
 
 Autodocs is meant to be extended with the context sources your team already

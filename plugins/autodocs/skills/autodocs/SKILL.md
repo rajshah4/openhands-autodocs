@@ -64,7 +64,7 @@ When another integration is available, use it only when it directly improves the
 
 ## Optional GitNexus Rules
 
-Use GitNexus only when it is available through MCP or CLI and the target repository has an index. Do not fail the Autodocs run just because GitNexus is missing.
+Use GitNexus only when it is available through MCP or CLI and the target repository has an index. Do not fail the Autodocs run just because GitNexus is missing, unreachable, or degraded. If MCP tools are unavailable but the GitNexus CLI works, note the MCP limitation and use the CLI as optional evidence.
 
 High-value GitNexus uses:
 
